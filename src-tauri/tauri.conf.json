@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "preview-parity",
+  "productName": "Preview",
   "version": "0.1.0",
-  "identifier": "app.previewparity.desktop",
+  "identifier": "app.preview.desktop",
   "build": {
     "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:1420",
@@ -13,7 +13,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "preview-parity",
+        "title": "Preview",
         "width": 800,
         "height": 600
       }
