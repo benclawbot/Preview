@@ -1,6 +1,7 @@
 name: Build and publish installers
 
 on:
+  workflow_dispatch:
   push:
     tags:
       - "v*"
@@ -60,6 +61,22 @@ jobs:
         with:
           targets: aarch64-apple-darwin,x86_64-apple-darwin
       - run: npm ci
+      - name: Install pkg-config
+        run: brew install pkg-config
+      - uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 9e593bb18ea69cc5095e012465dcd675a822ed0d
+      - name: Install universal HEIF codecs
+        run: |
+          "$VCPKG_ROOT/vcpkg" install \
+            "libheif[aom]:arm64-osx" \
+            "libheif[aom]:x64-osx"
+      - name: Configure universal pkg-config paths
+        run: |
+          echo "PKG_CONFIG_ALLOW_CROSS=1" >> "$GITHUB_ENV"
+          echo "SYSTEM_DEPS_LIBHEIF_LINK=static" >> "$GITHUB_ENV"
+          echo "PKG_CONFIG_PATH_aarch64_apple_darwin=$VCPKG_ROOT/installed/arm64-osx/lib/pkgconfig:$VCPKG_ROOT/installed/arm64-osx/share/pkgconfig" >> "$GITHUB_ENV"
+          echo "PKG_CONFIG_PATH_x86_64_apple_darwin=$VCPKG_ROOT/installed/x64-osx/lib/pkgconfig:$VCPKG_ROOT/installed/x64-osx/share/pkgconfig" >> "$GITHUB_ENV"
       - name: Fetch universal PDFium
         run: ./scripts/fetch-pdfium.sh
       - name: Build universal macOS installer
@@ -85,6 +102,12 @@ jobs:
           node-version: 22
           cache: npm
       - uses: dtolnay/rust-toolchain@stable
+      - uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgGitCommitId: 9e593bb18ea69cc5095e012465dcd675a822ed0d
+      - name: Install HEIF codecs
+        shell: pwsh
+        run: '& "$env:VCPKG_ROOT\vcpkg.exe" install "libheif[aom]:x64-windows-static-md"'
       - run: npm ci
       - name: Fetch PDFium
         shell: bash
@@ -107,6 +130,7 @@ jobs:
 
   publish:
     name: Publish GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: [linux, macos, windows]
     runs-on: ubuntu-24.04
     steps:

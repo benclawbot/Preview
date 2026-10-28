@@ -11,13 +11,17 @@ Open an EPUB, mark up a PDF, or bring a photo into focus — your files stay on 
 
 ## See Preview in action
 
-<table>
-  <tr>
-    <td align="center"><strong>EPUB books</strong><br><img src="docs/screenshots/epub-reader.png" alt="Preview reading an EPUB book" width="420"></td>
-    <td align="center"><strong>PDFs</strong><br><img src="docs/screenshots/pdf-markup.png" alt="Preview with PDF markup tools" width="420"></td>
-    <td align="center"><strong>Pictures</strong><br><img src="docs/screenshots/picture-editing.png" alt="Preview editing a picture" width="420"></td>
-  </tr>
-</table>
+### EPUB books
+
+<img src="docs/screenshots/epub-reader.png" alt="Preview reading an EPUB book" width="100%">
+
+### PDFs
+
+<img src="docs/screenshots/pdf-markup.png" alt="Preview with PDF markup tools" width="100%">
+
+### Pictures
+
+<img src="docs/screenshots/picture-editing.png" alt="Preview editing a picture" width="100%">
 
 ## Download Preview
 

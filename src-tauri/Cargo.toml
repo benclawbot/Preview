@@ -1,6 +1,6 @@
 [package]
 name = "preview"
-version = "0.1.0"
+version = "0.1.1"
 description = "A cross-platform PDF and image viewer and editor"
 authors = ["you"]
 edition = "2024"
@@ -31,7 +31,6 @@ uuid = { version = "1.29.0", features = ["v4"] }
 base64 = "0.23.1"
 tempfile = "3.27.0"
 once_cell = "1.21.4"
-libheif-rs = "3"
 little_exif = "0.6"
 tauri-plugin-dialog = { version = "2", default-features = false, features = ["xdg-portal"] }
 resvg = "0.49"
@@ -40,6 +39,11 @@ jpeg2k = "0.10"
 openjpeg-sys = "1.0.12"
 rand = "0.9"
 
+[target.'cfg(target_os = "linux")'.dependencies]
+libheif-rs = { version = "3", features = ["embedded-libheif"] }
+
+[target.'cfg(any(target_os = "macos", target_os = "windows"))'.dependencies]
+libheif-rs = "3"
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration
 [profile.release]

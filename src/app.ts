@@ -216,7 +216,7 @@ export class PreviewApp {
     });
     this.epubReader = new EpubReader(byId("epub-reader"), {
       onOutline: (entries) => this.renderEpubOutline(entries),
-      onPosition: (index, total, chapter) => this.epubPositionChanged(index, total, chapter),
+      onPosition: (index, total, chapter, atStart, atEnd) => this.epubPositionChanged(index, total, chapter, atStart, atEnd),
       onZoom: (percent) => this.zoomChanged(percent),
     });
     this.rail = new ThumbnailRail(byId("thumb-list"), byId("sidebar-empty"), {
@@ -256,8 +256,8 @@ export class PreviewApp {
     byId("btn-fit-width").addEventListener("click", () => this.fitWidth());
     byId("btn-fit-page").addEventListener("click", () => this.fitPage());
     byId("zoom-label").addEventListener("click", () => this.toggleMenu("zoom-menu", "zoom-label"));
-    byId("btn-prev-page").addEventListener("click", () => this.goToPage(this.currentPageNumber() - 1));
-    byId("btn-next-page").addEventListener("click", () => this.goToPage(this.currentPageNumber() + 1));
+    byId("btn-prev-page").addEventListener("click", () => this.turnPage(-1));
+    byId("btn-next-page").addEventListener("click", () => this.turnPage(1));
     byId<HTMLInputElement>("page-number").addEventListener("change", (event) => {
       const input = event.currentTarget as HTMLInputElement;
       const page = Number(input.value);
@@ -2182,6 +2182,14 @@ export class PreviewApp {
     }
   }
 
+  private turnPage(direction: -1 | 1): void {
+    if (this.document?.kind === "epub") {
+      void this.epubReader.turnPage(direction).catch((error) => toast(errorMessage(error), "error"));
+    } else {
+      this.viewer.goToPage(this.currentPageNumber() + direction);
+    }
+  }
+
   private zoomIn(): void {
     if (this.document?.kind === "epub") this.epubReader.zoomBy(10);
     else this.viewer.zoomIn();
@@ -2207,7 +2215,7 @@ export class PreviewApp {
     else this.viewer.fitPage();
   }
 
-  private epubPositionChanged(index: number, total: number, chapter: string): void {
+  private epubPositionChanged(index: number, total: number, chapter: string, atStart: boolean, atEnd: boolean): void {
     const doc = this.document;
     if (doc?.kind !== "epub") return;
     doc.page_count = Math.max(1, total);
@@ -2220,8 +2228,8 @@ export class PreviewApp {
     byId<HTMLInputElement>("page-number").value = String(index + 1);
     byId("status-page").textContent = `Position ${index + 1} of ${doc.page_count}`;
     byId("status-dims").textContent = chapter || "EPUB";
-    byId<HTMLButtonElement>("btn-prev-page").disabled = index <= 0;
-    byId<HTMLButtonElement>("btn-next-page").disabled = index >= doc.page_count - 1;
+    byId<HTMLButtonElement>("btn-prev-page").disabled = atStart;
+    byId<HTMLButtonElement>("btn-next-page").disabled = atEnd;
   }
 
   private setDocumentUI(doc: DocumentInfo | null): void {
@@ -2496,10 +2504,10 @@ export class PreviewApp {
     if (isEditableTarget(event.target)) return;
     if (event.key === "PageDown") {
       event.preventDefault();
-      this.goToPage(this.currentPageNumber() + 1);
+      this.turnPage(1);
     } else if (event.key === "PageUp") {
       event.preventDefault();
-      this.goToPage(this.currentPageNumber() - 1);
+      this.turnPage(-1);
     } else if (event.key === "Delete" || event.key === "Backspace") {
       if (this.selected) {
         event.preventDefault();

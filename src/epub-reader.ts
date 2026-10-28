@@ -8,7 +8,7 @@ export interface EpubOutlineEntry {
 
 export interface EpubReaderEvents {
   onOutline(entries: EpubOutlineEntry[]): void;
-  onPosition(index: number, total: number, chapter: string): void;
+  onPosition(index: number, total: number, chapter: string, atStart: boolean, atEnd: boolean): void;
   onZoom(percent: number): void;
 }
 
@@ -128,7 +128,7 @@ export class EpubReader {
     if (generation !== this.generation) return;
     this.total = Math.max(1, book.locations.length());
     this.current = Math.max(0, Math.min(this.total - 1, Math.trunc(initialPage)));
-    this.events.onPosition(this.current, this.total, "");
+    this.events.onPosition(this.current, this.total, "", this.current <= 0, false);
     const cfi = book.locations.cfiFromLocation(this.current);
     await rendition.display(cfi === "-1" ? undefined : cfi);
     if (generation === this.generation) {
@@ -144,6 +144,12 @@ export class EpubReader {
     const page = Math.max(0, Math.min(this.total - 1, Math.trunc(index)));
     const cfi = this.book.locations.cfiFromLocation(page);
     if (cfi !== "-1") await this.rendition.display(cfi);
+  }
+
+  async turnPage(direction: -1 | 1): Promise<void> {
+    if (!this.rendition) return;
+    if (direction > 0) await this.rendition.next();
+    else await this.rendition.prev();
   }
 
   async displayHref(href: string): Promise<void> {
@@ -171,7 +177,7 @@ export class EpubReader {
     const position = Number(book.locations.locationFromCfi(location.start.cfi));
     if (position >= 0) this.current = Math.max(0, Math.min(this.total - 1, position));
     const chapter = this.outline.find((item) => item.href.split("#", 1)[0] === location.start.href.split("#", 1)[0])?.title ?? "";
-    this.events.onPosition(this.current, this.total, chapter);
+    this.events.onPosition(this.current, this.total, chapter, location.atStart, location.atEnd);
   }
 
   private onKeyDown(event: KeyboardEvent): void {
@@ -189,10 +195,10 @@ export class EpubReader {
     }
     if (!command && !event.altKey && (event.key === "PageDown" || event.key === "ArrowRight" || event.key === " ")) {
       event.preventDefault();
-      void this.goToPage(this.current + 1);
+      void this.turnPage(1);
     } else if (!command && !event.altKey && (event.key === "PageUp" || event.key === "ArrowLeft")) {
       event.preventDefault();
-      void this.goToPage(this.current - 1);
+      void this.turnPage(-1);
     }
   }
 }
