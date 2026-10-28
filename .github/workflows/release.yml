@@ -69,12 +69,14 @@ jobs:
       - name: Install universal HEIF codecs
         run: |
           "$VCPKG_ROOT/vcpkg" install \
+            --overlay-triplets=scripts/vcpkg-triplets \
             "libheif[aom]:arm64-osx" \
             "libheif[aom]:x64-osx"
       - name: Configure universal pkg-config paths
         run: |
           echo "PKG_CONFIG_ALLOW_CROSS=1" >> "$GITHUB_ENV"
           echo "SYSTEM_DEPS_LIBHEIF_LINK=static" >> "$GITHUB_ENV"
+          echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_PATH_aarch64_apple_darwin=$VCPKG_ROOT/installed/arm64-osx/lib/pkgconfig:$VCPKG_ROOT/installed/arm64-osx/share/pkgconfig" >> "$GITHUB_ENV"
           echo "PKG_CONFIG_PATH_x86_64_apple_darwin=$VCPKG_ROOT/installed/x64-osx/lib/pkgconfig:$VCPKG_ROOT/installed/x64-osx/share/pkgconfig" >> "$GITHUB_ENV"
       - name: Fetch universal PDFium
