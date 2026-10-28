@@ -14,8 +14,13 @@
     "windows": [
       {
         "title": "Preview",
-        "width": 800,
-        "height": 600
+        "width": 1280,
+        "height": 860,
+        "minWidth": 900,
+        "minHeight": 620,
+        "center": true,
+        "resizable": true,
+        "dragDropEnabled": true
       }
     ],
     "security": {
@@ -27,10 +32,108 @@
     "targets": "all",
     "icon": [
       "icons/32x32.png",
+      "icons/64x64.png",
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": [
+      "vendor/pdfium/lib/*",
+      "vendor/pdfium/LICENSE",
+      "vendor/pdfium/licenses/*"
+    ],
+    "fileAssociations": [
+      {
+        "ext": ["pdf"],
+        "name": "PDF document",
+        "description": "Portable Document Format",
+        "mimeType": "application/pdf",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["epub"],
+        "name": "EPUB book",
+        "mimeType": "application/epub+zip",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["png"],
+        "name": "PNG image",
+        "mimeType": "image/png",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["jpg", "jpeg"],
+        "name": "JPEG image",
+        "mimeType": "image/jpeg",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["tif", "tiff"],
+        "name": "TIFF image",
+        "mimeType": "image/tiff",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["gif"],
+        "name": "GIF image",
+        "mimeType": "image/gif",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["heic", "heif"],
+        "name": "HEIC image",
+        "mimeType": "image/heic",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["webp"],
+        "name": "WebP image",
+        "mimeType": "image/webp",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["bmp"],
+        "name": "Bitmap image",
+        "mimeType": "image/bmp",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["svg"],
+        "name": "SVG image",
+        "mimeType": "image/svg+xml",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["cr2"],
+        "name": "Canon RAW image",
+        "mimeType": "image/x-canon-cr2",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["nef"],
+        "name": "Nikon RAW image",
+        "mimeType": "image/x-nikon-nef",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["arw"],
+        "name": "Sony RAW image",
+        "mimeType": "image/x-sony-arw",
+        "role": "Viewer"
+      },
+      {
+        "ext": ["dng"],
+        "name": "Adobe DNG image",
+        "mimeType": "image/x-adobe-dng",
+        "role": "Viewer"
+      }
+    ],
+    "linux": {
+      "deb": {
+        "depends": ["libwebkit2gtk-4.1-0", "libgtk-3-0", "libheif1"]
+      }
+    }
   }
 }

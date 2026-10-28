@@ -1,0 +1,123 @@
+name: Build and publish installers
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  linux:
+    name: Linux / Omarchy (x86_64)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            build-essential curl file libayatana-appindicator3-dev libgtk-3-dev \
+            libheif-dev libssl-dev libwebkit2gtk-4.1-dev libxdo-dev librsvg2-dev \
+            patchelf pkg-config wget
+      - run: npm ci
+      - name: Fetch PDFium
+        run: ./scripts/fetch-pdfium.sh
+      - name: Run checks
+        run: |
+          npm run build
+          cargo test --manifest-path src-tauri/Cargo.toml
+      - name: Build AppImage
+        run: npm run tauri build -- --bundles appimage
+      - name: Collect Linux release files
+        run: |
+          mkdir -p release-assets
+          cp src-tauri/target/release/bundle/appimage/*.AppImage release-assets/Preview-linux-x86_64.AppImage
+          cp src-tauri/icons/preview.png release-assets/Preview-icon.png
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-installer
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  macos:
+    name: macOS (universal)
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
+      - run: npm ci
+      - name: Fetch universal PDFium
+        run: ./scripts/fetch-pdfium.sh
+      - name: Build universal macOS installer
+        run: npm run tauri build -- --target universal-apple-darwin --bundles dmg
+      - name: Collect macOS release file
+        run: |
+          mkdir -p release-assets
+          cp src-tauri/target/universal-apple-darwin/release/bundle/dmg/*.dmg release-assets/Preview-macos-universal.dmg
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  windows:
+    name: Windows (x64)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+      - run: npm ci
+      - name: Fetch PDFium
+        shell: bash
+        run: ./scripts/fetch-pdfium.sh
+      - name: Build Windows installer
+        run: npm run tauri build -- --bundles nsis
+      - name: Collect Windows release file
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force release-assets | Out-Null
+          $installer = Get-ChildItem src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
+          if (-not $installer) { throw "NSIS installer was not produced" }
+          Copy-Item $installer.FullName release-assets/Preview-windows-x64-setup.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-installer
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  publish:
+    name: Publish GitHub release
+    needs: [linux, macos, windows]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+      - name: Create checksums
+        run: sha256sum release-assets/* > release-assets/SHA256SUMS.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          name: Preview ${{ github.ref_name }}
+          generate_release_notes: true
+          files: release-assets/*

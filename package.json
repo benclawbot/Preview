@@ -11,11 +11,15 @@
   },
   "dependencies": {
     "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-opener": "^2"
+    "@tauri-apps/plugin-dialog": "^2.8.3",
+    "epubjs": "^0.3.93"
+  },
+  "overrides": {
+    "@xmldom/xmldom": "^0.9.12"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2",
-		"vite": "^8.0.16",
-    "typescript": "~6.0.3"
+    "typescript": "~6.0.3",
+    "vite": "^8.0.16"
   }
 }
