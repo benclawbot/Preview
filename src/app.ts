@@ -568,6 +568,7 @@ export class PreviewApp {
     this.viewer.setDocument(doc);
     this.rail.setDocument(doc);
     this.showSidebarTab("pages");
+    if (doc.kind === "image") void this.showImageAdjustments();
     if (page > 0) this.viewer.goToPage(page);
   }
 
